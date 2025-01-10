@@ -1,49 +1,47 @@
 package clients.cashier;
 
-import catalogue.*;
-import middle.MiddleFactory;
-import middle.Names;
 import middle.RemoteMiddleFactory;
-
+import middle.MiddleFactory;
 import javax.swing.*;
 
 /**
- * The standalone Cashier Client.
+ * Cashier Client Application
  */
+public class CashierClient {
+    public static void main(String[] args) {
+        try {
+            // Initialize RemoteMiddleFactory
+            MiddleFactory mf = new RemoteMiddleFactory();
 
+            // Set up the GUI in the Event Dispatch Thread
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    // Create and display the Cashier View
+                    JFrame frame = new JFrame("Cashier Client");
+                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-public class CashierClient
-{
-   public static void main (String args[])
-   {
-     String stockURL = args.length < 1     // URL of stock RW
-                     ? Names.STOCK_RW      //  default  location
-                     : args[0];            //  supplied location
-     String orderURL = args.length < 2     // URL of order
-                     ? Names.ORDER         //  default  location
-                     : args[1];            //  supplied location
-     
-    RemoteMiddleFactory mrf = new RemoteMiddleFactory();
-    mrf.setStockRWInfo( stockURL );
-    mrf.setOrderInfo  ( orderURL );        //
-    displayGUI(mrf);                       // Create GUI
-  }
+                    // Create the model
+                    CashierModel cashierModel = new CashierModel(mf);
 
+                    // Instantiate the Cashier View
+                    CashierView cashierView = new CashierView(frame, mf, 100, 100);
 
-  private static void displayGUI(MiddleFactory mf)
-  {     
-    JFrame  window = new JFrame();
-     
-    window.setTitle( "Cashier Client (MVC RMI)");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    
-    CashierModel      model = new CashierModel(mf);
-    CashierView       view  = new CashierView( window, mf, 0, 0 );
-    CashierController cont  = new CashierController( model, view );
-    view.setController( cont );
+                    // Instantiate the Controller and link it to the View and Model
+                    CashierController cashierController = new CashierController(cashierModel, cashierView);
+                    cashierView.setController(cashierController);
 
-    model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Display Screen
-    model.askForUpdate();
-  }
+                    // Set the window visible
+                    frame.setVisible(true);
+                } catch (Exception e) {
+                    System.out.println("Error initializing Cashier Client: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            System.out.println("Failed to initialize MiddleFactory: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
+
+

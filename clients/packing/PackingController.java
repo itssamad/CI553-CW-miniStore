@@ -1,6 +1,7 @@
 package clients.packing;
 
 import clients.packing.PackingModel;
+
 import clients.packing.PackingView;
 /**
  * The Packing Controller

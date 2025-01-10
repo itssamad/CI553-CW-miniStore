@@ -1,6 +1,7 @@
 package clients;
 
 import clients.backDoor.BackDoorController;
+
 import clients.backDoor.BackDoorModel;
 import clients.backDoor.BackDoorView;
 import clients.cashier.CashierController;
@@ -14,121 +15,120 @@ import clients.packing.PackingModel;
 import clients.packing.PackingView;
 import middle.LocalMiddleFactory;
 import middle.MiddleFactory;
+
 import javax.swing.*;
 import java.awt.*;
 
 /**
- * Starts all the clients (user interface)  as a single application.
- * Good for testing the system using a single application.
- * @author  Mike Smith University of Brighton
- * @version 2.0
- * @author  Shine University of Brighton
- * @version year-2024
+ * Starts all the clients (user interface) as a single application.
  */
+public class Main {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new Main().begin());
+    }
 
-class Main
-{
-  public static void main (String args[])
-  {
-    new Main().begin();
-  }
+    /**
+     * Starts the system (Non-distributed).
+     */
+    public void begin() {
+        // Initialize MiddleFactory
+        MiddleFactory mlf = new LocalMiddleFactory();
 
-  /**
-   * Starts the system (Non distributed)
-   */
-  public void begin()
-  {
-    //DEBUG.set(true); /* Lots of debug info */
-    MiddleFactory mlf = new LocalMiddleFactory();  // Direct access
-    startCustomerGUI_MVC( mlf );
-    startCashierGUI_MVC( mlf );
-    startCashierGUI_MVC( mlf ); // you can create multiple clients
-    startPackingGUI_MVC( mlf );
-    startBackDoorGUI_MVC( mlf );
-  }
-  
-  /**
-  * start the Customer client, -search product
-  * @param mlf A factory to create objects to access the stock list
-  */
-  public void startCustomerGUI_MVC(MiddleFactory mlf )
-  {
-    JFrame  window = new JFrame();
-    window.setTitle( "Customer Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    Dimension pos = PosOnScrn.getPos();
-    
-    CustomerModel model      = new CustomerModel(mlf);
-    CustomerView view        = new CustomerView( window, mlf, pos.width, pos.height );
-    CustomerController cont  = new CustomerController( model, view );
-    view.setController( cont );
+        // Start all GUIs
+        startCustomerGUI_MVC(mlf, 50, 50);  // Top-left
+        startCashierGUI_MVC(mlf, 600, 50);  // Top-right
+        startPackingGUI_MVC(mlf, 50, 400);  // Bottom-left
+        startBackDoorGUI_MVC(mlf, 600, 400); // Bottom-right
+    }
 
-    model.addObserver( view );       // Add observer to the model, ---view is observer, model is Observable
-    window.setVisible(true);         // start Screen
-  }
+    /**
+     * Start the Customer client - search products.
+     * @param mlf A factory to create objects to access the stock list.
+     * @param x   The x-coordinate of the window position.
+     * @param y   The y-coordinate of the window position.
+     */
+    public void startCustomerGUI_MVC(MiddleFactory mlf, int x, int y) {
+        JFrame window = createWindow("Customer Client MVC", x, y);
 
-  /**
-   * start the cashier client - customer check stock, buy product
-   * @param mlf A factory to create objects to access the stock list
-   */
-  public void startCashierGUI_MVC(MiddleFactory mlf )
-  {
-    JFrame  window = new JFrame();
-    window.setTitle( "Cashier Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    Dimension pos = PosOnScrn.getPos();
-    
-    CashierModel model      = new CashierModel(mlf);
-    CashierView view        = new CashierView( window, mlf, pos.width, pos.height );
-    CashierController cont  = new CashierController( model, view );
-    view.setController( cont );
+        CustomerModel model = new CustomerModel(mlf);
+        CustomerView view = new CustomerView(window, mlf, x, y);
+        CustomerController controller = new CustomerController(model, view);
+        view.setController(controller);
 
-    model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
-    model.askForUpdate();            // Initial display
-  }
+        model.addObserver(view);  // Add observer to the model
+        window.setVisible(true);
+    }
 
-  /**
-   * start the Packing client - for warehouse staff to pack the bought order for customer, one order at a time
-   * @param mlf A factory to create objects to access the stock list
-   */
-  
-  public void startPackingGUI_MVC(MiddleFactory mlf)
-  {
-    JFrame  window = new JFrame();
+    /**
+     * Start the Cashier client - customer checks stock, buys products.
+     * @param mlf A factory to create objects to access the stock list.
+     * @param x   The x-coordinate of the window position.
+     * @param y   The y-coordinate of the window position.
+     */
+    public void startCashierGUI_MVC(MiddleFactory mlf, int x, int y) {
+        JFrame window = createWindow("Cashier Client MVC", x, y);
 
-    window.setTitle( "Packing Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    Dimension pos = PosOnScrn.getPos();
-    
-    PackingModel model      = new PackingModel(mlf);
-    PackingView view        = new PackingView( window, mlf, pos.width, pos.height );
-    PackingController cont  = new PackingController( model, view );
-    view.setController( cont );
+        CashierModel model = new CashierModel(mlf);
+        CashierView view = new CashierView(window, mlf, x, y);
+        CashierController controller = new CashierController(model, view);
+        view.setController(controller);
 
-    model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
-  }
-  
-  /**
-   * start the BackDoor client - store staff to check and update stock
-   * @param mlf A factory to create objects to access the stock list
-   */
-  public void startBackDoorGUI_MVC(MiddleFactory mlf )
-  {
-    JFrame  window = new JFrame();
+        model.addObserver(view);  // Add observer to the model
+        window.setVisible(true);
+        model.askForUpdate();  // Initial display
+    }
 
-    window.setTitle( "BackDoor Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    Dimension pos = PosOnScrn.getPos();
-    
-    BackDoorModel model      = new BackDoorModel(mlf);
-    BackDoorView view        = new BackDoorView( window, mlf, pos.width, pos.height );
-    BackDoorController cont  = new BackDoorController( model, view );
-    view.setController( cont );
+    /**
+     * Start the Packing client - warehouse staff packs bought orders.
+     * @param mlf A factory to create objects to access the stock list.
+     * @param x   The x-coordinate of the window position.
+     * @param y   The y-coordinate of the window position.
+     */
+    public void startPackingGUI_MVC(MiddleFactory mlf, int x, int y) {
+        JFrame window = createWindow("Packing Client MVC", x, y);
 
-    model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
-  }
-  
+        PackingModel model = new PackingModel(mlf);
+        PackingView view = new PackingView(window, mlf, x, y);
+        PackingController controller = new PackingController(model, view);
+        view.setController(controller);
+
+        model.addObserver(view);  // Add observer to the model
+        window.setVisible(true);
+    }
+
+    /**
+     * Start the BackDoor client - store staff checks and updates stock.
+     * @param mlf A factory to create objects to access the stock list.
+     * @param x   The x-coordinate of the window position.
+     * @param y   The y-coordinate of the window position.
+     */
+    public void startBackDoorGUI_MVC(MiddleFactory mlf, int x, int y) {
+        JFrame window = createWindow("BackDoor Client MVC", x, y);
+
+        BackDoorModel model = new BackDoorModel(mlf);
+        BackDoorView view = new BackDoorView(window, mlf, x, y);
+        BackDoorController controller = new BackDoorController(model, view);
+        view.setController(controller);
+
+        model.addObserver(view);  // Add observer to the model
+        window.setVisible(true);
+    }
+
+    /**
+     * Creates a consistent JFrame for each client.
+     * @param title The title of the window.
+     * @param x     The x-coordinate of the window position.
+     * @param y     The y-coordinate of the window position.
+     * @return A JFrame with standardized settings.
+     */
+    private JFrame createWindow(String title, int x, int y) {
+        JFrame window = new JFrame();
+        window.setTitle(title);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setSize(500, 400);  // Consistent size for all windows
+        window.setLocation(x, y);  // Set position on screen
+        window.setLayout(new BorderLayout());
+        return window;
+    }
 }
+
